@@ -1,0 +1,126 @@
+/* =========================================================================
+   Chery Antigua — model brochure (print-ready A4)
+   Light, editorial design echoing the official Chery print VI:
+   white pages, uppercase headings, big imagery, deep navy + bronze accents.
+   Screen: centred pages you can review. Print/Save-as-PDF: clean A4.
+   ========================================================================= */
+
+:root {
+  --b-blue:   #0b457f;   /* Chery deep navy (print VI) */
+  --b-accent: #a4896c;   /* champagne bronze */
+  --b-ink:    #16202b;
+  --b-muted:  #5c6b78;
+  --b-line:   #e6e3df;
+  --b-soft:   #f7f6f4;
+  --b-sans: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body.brochure { background: #4a5560; font-family: var(--b-sans); color: var(--b-ink); line-height: 1.6; -webkit-font-smoothing: antialiased; padding: 28px 0 80px; }
+img { display: block; max-width: 100%; }
+
+/* a "sheet" = one A4 page */
+.sheet {
+  width: 210mm; min-height: 297mm; margin: 0 auto 22px; background: #fff;
+  position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,.35);
+}
+
+/* ---------------------------------------------------------------- cover */
+.cover { display: flex; flex-direction: column; color: #fff; }
+.cover-bg { position: absolute; inset: 0; z-index: 0; }
+.cover-bg img { width: 100%; height: 100%; object-fit: cover; }
+.cover-bg::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(6,20,34,.55) 0%, rgba(6,20,34,0) 26%, rgba(6,20,34,.15) 55%, rgba(4,12,20,.85) 92%); }
+.cover-top, .cover-foot { position: relative; z-index: 2; padding: 18mm 16mm; }
+.cover-top { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.brand-lockup { display: flex; align-items: center; justify-content: center; }
+.brand-lockup img { height: 46px; width: auto; }
+.cover-top .since { font-size: 12px; letter-spacing: .5em; text-indent: .5em; opacity: .9; text-transform: uppercase; text-align: center; }
+.cover-foot { margin-top: auto; }
+.cover-foot .tag { display: inline-block; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 12px; color: #d9c1a3; margin-bottom: 12px; }
+.cover-foot h1 { font-size: 58px; font-weight: 800; font-style: italic; letter-spacing: .01em; text-transform: uppercase; line-height: 1; }
+.cover-foot .tl { font-weight: 300; text-transform: uppercase; letter-spacing: .12em; margin-top: 14px; font-size: 18px; opacity: .95; }
+
+/* --------------------------------------------------------------- detail */
+.detail { padding: 12mm 15mm 11mm; display: flex; flex-direction: column; }
+.d-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid var(--b-line); }
+.d-brand { display: flex; align-items: center; gap: 10px; }
+.d-brand img { height: 26px; width: auto; }
+.d-brand .wm { font-weight: 700; letter-spacing: .16em; font-size: 15px; color: var(--b-blue); }
+.d-brand .wm small { display: block; font-size: 8.5px; letter-spacing: .3em; color: var(--b-accent); font-weight: 600; }
+.d-head .d-type { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--b-muted); font-weight: 600; }
+
+.detail h2 { font-size: 30px; font-weight: 800; font-style: italic; text-transform: uppercase; margin-top: 10px; letter-spacing: .01em; }
+.detail .lead { color: var(--b-muted); font-size: 13px; font-weight: 300; margin-top: 8px; max-width: 66ch; }
+/* full vehicle framed (contain) on a soft panel so the whole car is always shown */
+.d-img { margin: 12px 0 2px; border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; background: var(--b-soft); break-inside: avoid; }
+.d-img img { width: 100%; height: 100%; object-fit: contain; }
+
+/* categorised technical specifications */
+.tech-cat { break-inside: avoid; margin-top: 12px; }
+.tech-cat-h { font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--b-blue); padding-bottom: 5px; border-bottom: 2px solid var(--b-blue); }
+.tech-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 34px; }
+.tech-list .tr { display: flex; justify-content: space-between; gap: 14px; padding: 4.5px 0; border-bottom: 1px solid var(--b-line); font-size: 12px; }
+.tech-list .tr dt { color: var(--b-muted); }
+.tech-list .tr dd { color: var(--b-ink); font-weight: 600; text-align: right; white-space: nowrap; display: flex; align-items: center; justify-content: flex-end; }
+.tech-list .tr dd .ok { display: inline-flex; }
+.tech-list .tr dd .tk { width: 15px; height: 15px; color: var(--b-accent); }
+
+.b-h3 { font-size: 11.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--b-accent); margin: 11px 0 7px; display: flex; align-items: center; gap: 12px; }
+.b-h3::after { content: ""; height: 1px; flex: 1; background: var(--b-line); }
+
+.spec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.b-spec { border: 1px solid var(--b-line); border-radius: 6px; padding: 11px 12px 12px; background: var(--b-soft); }
+.b-spec .k { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--b-muted); }
+.b-spec .v { font-size: 19px; font-weight: 800; margin-top: 6px; color: var(--b-blue); }
+.b-spec .v small { font-size: 11px; font-weight: 500; color: var(--b-muted); }
+
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 30px; }
+.feat-grid li { list-style: none; display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; padding: 3.5px 0; border-bottom: 1px solid var(--b-line); }
+.feat-grid .tick { flex: none; width: 17px; height: 17px; color: var(--b-accent); margin-top: 2px; }
+
+.b-offer { margin-top: 14px; border: 1px solid var(--b-line); border-radius: 8px; overflow: hidden; }
+.b-offer .oh { background: var(--b-blue); color: #fff; padding: 6px 16px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: 11.5px; }
+.b-offer .orow { display: grid; grid-template-columns: repeat(3, 1fr); }
+.b-offer .ocell { padding: 9px 16px; text-align: center; }
+.b-offer .ocell + .ocell { border-left: 1px solid var(--b-line); }
+.b-offer .ocell .num { font-size: 22px; font-weight: 800; color: var(--b-blue); }
+.b-offer .ocell .lbl { font-size: 10.5px; color: var(--b-muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+
+/* contact footer */
+.b-contact { margin-top: 26px; padding-top: 12px; border-top: 2px solid var(--b-blue); break-inside: avoid; }
+.b-contact .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.b-contact .c-brand { display: flex; align-items: center; gap: 10px; }
+.b-contact .c-brand img { height: 30px; }
+.b-contact .c-brand .wm { font-weight: 700; letter-spacing: .16em; font-size: 15px; color: var(--b-blue); }
+.b-contact .c-brand .wm small { display: block; font-size: 8.5px; letter-spacing: .3em; color: var(--b-accent); }
+.b-contact .c-info { font-size: 12px; color: var(--b-ink); text-align: right; line-height: 1.7; }
+.b-contact .c-info b { color: var(--b-blue); }
+.b-contact .c-info a { color: var(--b-ink); text-decoration: none; }
+.b-disc { font-size: 9.5px; color: var(--b-muted); margin-top: 12px; font-style: italic; }
+
+/* print / save-as-pdf button (screen only) */
+.print-bar { position: fixed; right: 22px; bottom: 22px; z-index: 50; display: flex; gap: 10px; }
+.print-btn { font-family: var(--b-sans); font-weight: 600; font-size: 14px; border: 0; border-radius: 6px; padding: 13px 22px; cursor: pointer; box-shadow: 0 10px 26px rgba(0,0,0,.35); }
+.print-btn.primary { background: var(--b-accent); color: #fff; }
+.print-btn.ghost { background: #fff; color: var(--b-ink); }
+
+/* ---------------------------------------------------------------- print */
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body.brochure { background: #fff; padding: 0; margin: 0; }
+  .no-print, .print-bar { display: none !important; }
+  .sheet { width: 210mm; height: 297mm; min-height: 297mm; margin: 0; box-shadow: none; overflow: hidden; page-break-after: always; break-after: page; }
+  .sheet.detail { height: auto; }            /* detail may run its natural height */
+  .sheet:last-child { page-break-after: auto; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .spec-grid, .feat-grid, .b-offer, .b-contact, .tech-cat, .d-img { break-inside: avoid; }
+}
+
+@media (max-width: 800px) {
+  .sheet { width: 100%; min-height: 0; }
+  .cover { min-height: 128vw; }
+  .spec-grid { grid-template-columns: 1fr 1fr; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .cover-foot h1 { font-size: 44px; }
+}

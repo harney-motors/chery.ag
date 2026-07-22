@@ -1,0 +1,15 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+*~
+
+# Python
+__pycache__/
+*.pyc
+
+# Machine-local Claude settings (keep launch.json, ignore local overrides)
+.claude/settings.local.json
+
+# Scratch / temporary image working files
+images/_*
