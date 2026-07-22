@@ -48,7 +48,8 @@ MODELS = [
         "tagline": "Cross wonderful life.",
         "image": "images/tiggo-4.jpg",
         "hero": "images/tiggo-4-hero.jpg",
-        "gallery": ["images/tiggo-4-g1.jpg", "images/tiggo-4-g2.jpg", "images/tiggo-4-g3.jpg"],
+        "gallery": ["images/tiggo-4-g1.jpg", "images/tiggo-4-g2.jpg", "images/tiggo-4-g3.jpg",
+                    "images/tiggo-4-g4.jpg", "images/tiggo-4-g5.jpg", "images/tiggo-4-g6.jpg"],
         "interior": ["images/tiggo-4-int1.jpg", "images/tiggo-4-int2.jpg", "images/tiggo-4-int3.jpg", "images/tiggo-4-int4.jpg"],
         "blurb": "With a turbocharged 1.5T engine, dual 10.25\" displays and a full suite of driver assistance, the Chery Tiggo 4 packs big-SUV equipment into an easy, island-sized package.",
         "lede": "The compact SUV that gives you more of everything. The Chery Tiggo 4 pairs a punchy 1.5T engine and smooth CVT with dual 10.25\" displays, wireless Apple CarPlay & Android Auto, and safety tech usually reserved for far bigger price tags.",
@@ -85,7 +86,6 @@ MODELS = [
             ("Bloodstone Red", "images/colours/tiggo-4-bloodstone-red.jpg", "bloodstone-red"),
             ("Carbon Black", "images/colours/tiggo-4-carbon-black.jpg", "carbon-black"),
             ("Phantom Gray", "images/colours/tiggo-4-phantom-gray.jpg", "phantom-gray"),
-            ("Tech Gray", "images/colours/tiggo-4-tech-gray.jpg", None),
         ],
     },
     {
@@ -95,7 +95,8 @@ MODELS = [
         "tagline": "Cross wonderful life — electrified.",
         "image": "images/tiggo-4-hev.jpg",
         "hero": "images/tiggo-4-hev-hero.jpg",
-        "gallery": ["images/tiggo-4-hev-g1.jpg", "images/tiggo-4-hev-g2.jpg", "images/tiggo-4-hev-g3.jpg"],
+        "gallery": ["images/tiggo-4-hev-g1.jpg", "images/tiggo-4-hev-g2.jpg", "images/tiggo-4-hev-g3.jpg",
+                    "images/tiggo-4-hev-g4.jpg", "images/tiggo-4-hev-g5.jpg", "images/tiggo-4-hev-g6.jpg"],
         "interior": ["images/tiggo-4-hev-int2.jpg", "images/tiggo-4-hev-int1.jpg", "images/tiggo-4-hev-int3.jpg", "images/tiggo-4-hev-int4.jpg"],
         "blurb": "The Tiggo 4 you know, with Chery's CSH full-hybrid drive — self-charging, whisper-smooth in town and dramatically lighter on fuel, with no plug required.",
         "lede": "All the equipment of the Tiggo 4, powered by Chery's CSH full-hybrid system. A 1.5L engine and DHT electric drive work together seamlessly — instant, quiet response in town, big fuel savings on every drive, and it charges itself as you go. No plug, no compromise.",
@@ -133,7 +134,6 @@ MODELS = [
             ("Bloodstone Red", "images/colours/tiggo-4-bloodstone-red.jpg", "bloodstone-red"),
             ("Carbon Black", "images/colours/tiggo-4-carbon-black.jpg", "carbon-black"),
             ("Phantom Gray", "images/colours/tiggo-4-phantom-gray.jpg", "phantom-gray"),
-            ("Tech Gray", "images/colours/tiggo-4-tech-gray.jpg", None),
         ],
     },
     {
@@ -143,7 +143,8 @@ MODELS = [
         "tagline": "All the way with you.",
         "image": "images/tiggo-7.jpg",
         "hero": "images/tiggo-7-hero.jpg",
-        "gallery": ["images/tiggo-7-g1.jpg", "images/tiggo-7-g2.jpg", "images/tiggo-7-g3.jpg"],
+        "gallery": ["images/tiggo-7-g1.jpg", "images/tiggo-7-g2.jpg", "images/tiggo-7-g3.jpg",
+                    "images/tiggo-7-g4.jpg", "images/tiggo-7-g5.jpg", "images/tiggo-7-g6.jpg"],
         "interior": ["images/tiggo-7-int0.jpg", "images/tiggo-7-int1.jpg", "images/tiggo-7-int2.jpg", "images/tiggo-7-int3.jpg"],
         "blurb": "With a 194 hp 1.6T engine, 7-speed dual-clutch and dual 12.3\" displays, the Chery Tiggo 7 Pro brings genuine refinement to the everyday island drive.",
         "lede": "Sleek design outside, serious refinement inside. The Chery Tiggo 7 Pro pairs a responsive 1.6T turbo with a 7-speed dual-clutch, dual 12.3\" displays and ventilated seats — the mid-size SUV that feels a class above.",
@@ -189,7 +190,8 @@ MODELS = [
         "tagline": "Enjoy your first class.",
         "image": "images/tiggo-8.jpg",
         "hero": "images/tiggo-8-hero.jpg",
-        "gallery": ["images/tiggo-8-g1.jpg", "images/tiggo-8-g2.jpg", "images/tiggo-8-g3.jpg"],
+        "gallery": ["images/tiggo-8-g4.jpg", "images/tiggo-8-g5.jpg", "images/tiggo-8-g6.jpg",
+                    "images/tiggo-8-g1.jpg", "images/tiggo-8-g2.jpg", "images/tiggo-8-g3.jpg"],
         "interior": ["images/tiggo-8-int0.jpg", "images/tiggo-8-int1.jpg", "images/tiggo-8-int2.jpg", "images/tiggo-8-int3.jpg"],
         "blurb": "With three rows of genuine space, up to 254 hp with ZF all-wheel drive, and a 15.6\" smart cockpit, the new Chery Tiggo 8 is first-class travel for all seven seats.",
         "lede": "Seven seats, zero compromise. The all-new Chery Tiggo 8 pairs turbo power — up to a 254 hp 2.0T with ZF intelligent AWD — with a frosted-leather cabin, a 15.6\" Snapdragon-powered smart screen and comfort engineered for every row.",
@@ -444,6 +446,8 @@ def head(title, desc, prefix, canonical_path, extra_head=""):
   <meta property="og:title" content="{E(title)}">
   <meta property="og:description" content="{E(desc)}">
   <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="{prefix}images/favicon.png">
+  <link rel="apple-touch-icon" href="{prefix}images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,600;1,700;1,800&display=swap" rel="stylesheet">
@@ -651,6 +655,19 @@ def build_home():
     </div>
     {bands}
   </div>
+
+  <section class="section showcase snap" id="inside">
+    <div class="wrap">
+      <div class="overline center reveal">Step inside</div>
+      <h2 class="section-title center reveal">Cabins built for the climate</h2>
+      <p class="section-sub center reveal" style="margin-inline:auto">Ventilated seats, panoramic light and quiet, screen-first cockpits — every Tiggo cabin is made for island driving.</p>
+      <div class="showcase-grid">
+        <figure class="sc-item reveal"><img src="{p}images/tiggo-9-int0.jpg" alt="Chery Tiggo 9 cabin" loading="lazy"></figure>
+        <figure class="sc-item reveal"><img src="{p}images/tiggo-8-int4.jpg" alt="Chery Tiggo 8 first-class seating" loading="lazy"></figure>
+        <figure class="sc-item reveal"><img src="{p}images/tiggo-7-int0.jpg" alt="Chery Tiggo 7 Pro interior" loading="lazy"></figure>
+      </div>
+    </div>
+  </section>
 
   <section class="offer-strip fill snap" id="promise">
     <div class="wrap">
@@ -891,6 +908,7 @@ def brochure_head(title):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{E(title)}</title>
+  <link rel="icon" type="image/png" href="../images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
