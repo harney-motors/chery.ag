@@ -496,3 +496,32 @@ html { scroll-padding-top: 116px; scroll-behavior: smooth; }
   .row-2 { grid-template-columns: 1fr; }
   .perf-row { gap: 30px; }
 }
+
+/* ==================================================================
+   Nav Test-Drive icon, smaller quote button, and a background image
+   for the tall Why row (adapted from the BYD Antigua build).
+   ================================================================== */
+/* 20% smaller nav quote button */
+.nav-actions .btn.btn-sm { padding: 9.5px 21px; font-size: 10.5px; letter-spacing: .16em; }
+/* Test Drive nav icon — glyph that expands to reveal its label on hover
+   (dark on this light header) */
+.nav-icon-btn { display: inline-flex; align-items: center; gap: 0; height: 40px; padding: 0 10px; border: 1px solid rgba(19,22,25,.24); border-radius: 999px; color: var(--ink); transition: border-color .25s var(--ease), background .25s var(--ease); overflow: hidden; }
+.nav-icon-btn .ni-glyph { display: inline-flex; flex: none; }
+.nav-icon-btn .ni-glyph svg { display: block; transition: transform .5s var(--ease); }
+.nav-icon-btn .ni-label { max-width: 0; opacity: 0; white-space: nowrap; overflow: hidden;
+  font-family: var(--disp); font-weight: 600; font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  transition: max-width .4s var(--ease), opacity .3s var(--ease), margin-left .4s var(--ease); }
+.nav-icon-btn:hover, .nav-icon-btn:focus-visible { background: rgba(19,22,25,.05); border-color: var(--navy); color: var(--navy); }
+.nav-icon-btn:hover .ni-glyph svg, .nav-icon-btn:focus-visible .ni-glyph svg { transform: rotate(-28deg); }
+.nav-icon-btn:hover .ni-label, .nav-icon-btn:focus-visible .ni-label { max-width: 140px; opacity: 1; margin-left: 8px; }
+@media (max-width: 940px) { .nav-icon-btn { display: none; } }
+
+/* full-bleed background image fills the tall Why row's dead space; a
+   layered light wash keeps the middle (text) crisp */
+.why { position: relative; overflow: hidden; }
+.row-bg { position: absolute; inset: 0; z-index: 0; }
+.row-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+.row-bg::after { content: ""; position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(255,255,255,.74) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.97) 66%, rgba(255,255,255,.76) 100%),
+  linear-gradient(90deg, rgba(255,255,255,.5), transparent 55%); }
+.why .wrap { position: relative; z-index: 1; }
