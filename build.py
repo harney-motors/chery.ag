@@ -24,8 +24,8 @@ SITE = {
     "address": "Chery Showroom, CMS Auto Complex, Scott's Hill Road, St. John's, Antigua",
     "email": "sales@chery.ag",
     "domain": "chery.ag",
-    "instagram": "https://instagram.com/chery.ag",
-    "facebook": "https://facebook.com/CheryAntigua",
+    "instagram": "https://www.instagram.com/cheryantigua/",
+    "facebook": "https://www.facebook.com/cheryantigua",
     "warranty": "7-Year / 200,000 km Warranty",
 }
 
