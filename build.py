@@ -11,7 +11,7 @@ cheryinternational.com): Poppins, light #f4f4f4 backgrounds, deep Chery
 navy #0B457F, champagne-bronze #A4896C CTAs, dark performance bands and
 big italic uppercase model wordmarks.
 """
-import datetime, html, json, pathlib
+import datetime, html, json, pathlib, re
 
 ROOT = pathlib.Path(__file__).parent
 
@@ -473,8 +473,16 @@ LEAD_ORIGIN = "https://wqlvyeuqaejbtsrlbpvt.supabase.co"
 GA4_ID = "G-WE9Y3926QN"
 
 def canonical(path):
-    """Absolute URL for a site-relative page path ('' / 'index.html' → root)."""
-    return BASE_URL + "/" + ("" if path in ("", "index.html") else path)
+    """Absolute URL for a site-relative page path.
+
+    '' / 'index.html' → the site root, and any directory index (models/index.html)
+    → the directory URL, so there is exactly one canonical form per page.
+    """
+    if path in ("", "index.html"):
+        return BASE_URL + "/"
+    if path.endswith("/index.html"):
+        return BASE_URL + "/" + path[: -len("index.html")]
+    return BASE_URL + "/" + path
 
 def abs_url(rel):
     """Absolute URL for a site-relative asset path."""
@@ -620,6 +628,107 @@ def contact_ld():
         ],
     }
 
+
+# ────────────────────────────────────────────────────── models index page
+def build_models_index():
+    """A real /models/ page: a category page search can rank, a proper
+    breadcrumb target, and an internal-linking hub to every model."""
+    p = "../"
+    cards = "".join(
+        f'<a class="mcard reveal" href="/models/{m["slug"]}.html">'
+        f'<span class="ph"><img src="{p}{m["image"]}" alt="{BRAND} {E(m["name"])}" loading="lazy"></span>'
+        f'<span class="tx"><h2 class="nm">{BRAND} {E(m["name"])}</h2>'
+        f'<span class="ty">{E(m["type"])}</span>'
+        f'<span class="bl">{E(m["blurb"])}</span></span></a>'
+        for m in MODELS)
+
+    body = f"""
+{header(p)}
+
+<main class="models-page">
+  <div class="wrap">
+    <div class="mp-head reveal in">
+      <div class="overline">The range</div>
+      <h1>{BRAND} models in Antigua &amp; Barbuda</h1>
+      <p class="mp-lede">Every {BRAND} we sell on the island, with specifications,
+      photography and a test drive you can book in a couple of taps. Sold and
+      serviced by {SITE_NAME} — {SITE['address']}.</p>
+    </div>
+    <div class="mgrid">{cards}</div>
+  </div>
+</main>
+
+{footer(p)}
+{floating()}
+{modal()}
+{scripts(p)}"""
+
+    title = f"All {BRAND} Models in Antigua | {SITE_NAME}"
+    desc = (f"Every {BRAND} model available in Antigua & Barbuda — "
+            + ", ".join(m["name"] for m in MODELS[:4])
+            + f" and more. Specs, photos and test drives from {SITE_NAME}.")[:158]
+    crumbs = breadcrumb_ld([("Home", BASE_URL + "/"),
+                            ("Models", canonical("models/index.html"))])
+    listing = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "@id": canonical("models/index.html") + "#page",
+        "url": canonical("models/index.html"),
+        "name": f"{BRAND} models",
+        "inLanguage": "en",
+        "about": {"@id": BASE_URL + "/#dealer"},
+        "mainEntity": {
+            "@type": "ItemList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": i, "name": f"{BRAND} {m['name']}",
+                 "url": canonical(f"models/{m['slug']}.html")}
+                for i, m in enumerate(MODELS, start=1)
+            ],
+        },
+    }
+    (ROOT / "models" / "index.html").write_text(
+        head(title, desc, p, "models/index.html", jsonld=ld(listing, crumbs)) + body,
+        encoding="utf-8")
+    print("wrote models/index.html")
+
+# ───────────────────────────────────────────────────────────── 404 page
+def build_404():
+    """Netlify serves this for any unmatched path, at any depth — so every
+    asset and link here must be root-absolute, not relative."""
+    p = "/"
+    body = f"""
+{header(p)}
+
+<main class="models-page">
+  <div class="wrap" style="text-align:center">
+    <div class="mp-head reveal in">
+      <div class="overline center">Error 404</div>
+      <h1>We can't find that page</h1>
+      <p class="mp-lede" style="margin-inline:auto">The link may be out of date, or the
+      page may have moved. The whole {BRAND} range is a click away — or talk to us and
+      we'll point you in the right direction.</p>
+      <h2 class="sr-only">Where to go next</h2>
+      <div class="hero-cta" style="justify-content:center;margin-top:28px">
+        <a class="btn btn-primary btn-lg" href="/models/">Browse the range</a>
+        <a class="btn btn-outline btn-lg" href="/contact.html">Contact us</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+{footer(p)}
+{floating()}
+{modal()}
+{scripts(p)}"""
+
+    (ROOT / "404.html").write_text(
+        head(f"Page not found | {SITE_NAME}",
+             f"That page doesn't exist. Browse the full {BRAND} range in Antigua "
+             f"or get in touch with {SITE_NAME}.",
+             p, "404.html", robots="noindex, follow") + body,
+        encoding="utf-8")
+    print("wrote 404.html")
+
 # ───────────────────────────────────────────── sitemap / robots / security
 SECURITY_CONTACT = SITE["email"]   # where to report a vulnerability
 
@@ -630,7 +739,9 @@ def build_seo_files():
 
     # ── sitemap.xml — home, contact and every model page. Brochures are print
     #    duplicates of the model pages and are deliberately left out.
-    pages = [("index.html", "1.0", "weekly"), ("contact.html", "0.7", "monthly")]
+    pages = [("index.html", "1.0", "weekly"),
+             ("models/index.html", "0.9", "weekly"),
+             ("contact.html", "0.7", "monthly")]
     pages += [(f"models/{m['slug']}.html", "0.9", "monthly") for m in MODELS]
     entries = "".join(
         f"  <url>\n"
@@ -702,6 +813,7 @@ Sitemap: {BASE_URL}/sitemap.xml
     (ROOT / "_redirects").write_text("""# Netlify / Cloudflare Pages redirects. Generated by build.py.
 # Keep one canonical URL for the home page.
 /index.html    /    301!
+/models/index.html    /models/    301!
 """, encoding="utf-8")
 
     # ── security.txt (RFC 9116). Expires one year from this build.
@@ -735,12 +847,72 @@ gtag("config", "{GA4_ID}");
         print("  note: GA4_ID is empty — no analytics tag emitted. "
               "Set GA4_ID in build.py and re-run to switch it on.")
 
+
+# ─────────────────────────────────────────── output post-processing (CWV)
+_DIMS = {}
+
+def _image_size(path):
+    """Intrinsic pixel size of an image, or None if it can't be read."""
+    if path not in _DIMS:
+        try:
+            from PIL import Image
+            with Image.open(path) as im:
+                _DIMS[path] = im.size
+        except Exception:
+            _DIMS[path] = None
+    return _DIMS[path]
+
+def add_image_dimensions():
+    """Give every <img> its real width/height.
+
+    The browser uses the ratio to reserve the right box before the bytes
+    arrive, which is what keeps Cumulative Layout Shift at zero. Paired with
+    `img { height: auto }` in the CSS, so nothing is visually resized — the
+    object-fit rules on .hero-bg, .mband .media etc. are more specific and
+    still win.
+
+    Runs as a post-process over the written files so it covers every <img> the
+    generator emits without threading sizes through each template.
+    """
+    added = 0
+    pages = (list(ROOT.glob("*.html")) + list(ROOT.glob("models/*.html"))
+             + list(ROOT.glob("brochures/*.html")))
+
+    def fix(m):
+        nonlocal added
+        tag = m.group(0)
+        if "width=" in tag or "height=" in tag:
+            return tag
+        src = re.search(r'src="([^"]+)"', tag)
+        if not src or src.group(1).startswith(("http", "data:", "//")):
+            return tag
+        # every image lives under ROOT/images, whatever the page's depth
+        # strip "../" (nested pages) and a leading "/" (the 404 page, which
+        # must use root-absolute paths because it is served at any depth)
+        rel = re.sub(r"^(\.\./)+", "", src.group(1)).lstrip("/")
+        size = _image_size(ROOT / rel)
+        if not size:
+            return tag
+        added += 1
+        return tag[:-1].rstrip() + f' width="{size[0]}" height="{size[1]}">'
+
+    for page in pages:
+        html_text = page.read_text(encoding="utf-8")
+        out = re.sub(r"<img\b[^>]*>", fix, html_text)
+        if out != html_text:
+            page.write_text(out, encoding="utf-8")
+    print(f"added width/height to {added} images")
+
 def head(title, desc, prefix, canonical_path, extra_head="", jsonld="",
-         robots="index, follow", share_image=None):
+         robots="index, follow", share_image=None, preload=None):
     """The <head> for every public page: title/description, canonical URL,
     Open Graph + Twitter cards, JSON-LD and the GA4 tag."""
     url   = canonical(canonical_path)
     share = abs_url(share_image or HERO_IMAGE)
+    # Preloading the hero tells the browser to fetch the Largest Contentful
+    # Paint image immediately, instead of waiting to discover it in the body.
+    pre = (f'\n  <link rel="preload" as="image" href="{prefix}{preload}" fetchpriority="high">'
+           if preload else "")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -749,7 +921,7 @@ def head(title, desc, prefix, canonical_path, extra_head="", jsonld="",
   <title>{E(title)}</title>
   <meta name="description" content="{E(desc)}">
   <meta name="robots" content="{robots}">
-  <link rel="canonical" href="{url}">
+  <link rel="canonical" href="{url}">{pre}
   <meta name="theme-color" content="{THEME}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="{E(SITE_NAME)}">
@@ -774,7 +946,7 @@ def head(title, desc, prefix, canonical_path, extra_head="", jsonld="",
 
 def header(prefix):
     mega = "".join(
-        f'<a class="mega-item" href="{prefix}models/{m["slug"]}.html">'
+        f'<a class="mega-item" href="/models/{m["slug"]}.html">'
         f'<span class="mega-thumb"><img src="{prefix}{m["image"]}" alt="Chery {E(m["name"])}" loading="lazy"></span>'
         f'<span class="mega-tx"><span class="mega-name">{E(m["name"])}</span>'
         f'<span class="mega-type">{E(m["type"])}</span></span></a>'
@@ -782,21 +954,21 @@ def header(prefix):
     return f"""
 <header class="site-header">
   <div class="wrap nav">
-    <a class="brand" href="{prefix}index.html" aria-label="Chery Antigua home">
+    <a class="brand" href="/" aria-label="Chery Antigua home">
       {logo(prefix, dark=True)}
     </a>
     <nav class="nav-links">
       <div class="nav-item has-mega">
-        <a class="link" href="{prefix}index.html#models">Models {IC_CARET}</a>
+        <a class="link" href="/models/">Models {IC_CARET}</a>
         <div class="mega"><div class="mega-inner">{mega}</div></div>
       </div>
-      <a class="link" href="{prefix}index.html#promise">Warranty</a>
-      <a class="link" href="{prefix}index.html#why">Why Chery</a>
-      <a class="link" href="{prefix}contact.html">Contact</a>
+      <a class="link" href="/#promise">Warranty</a>
+      <a class="link" href="/#why">Why Chery</a>
+      <a class="link" href="/contact.html">Contact</a>
       <button class="btn btn-primary mobile-cta" data-quote data-model="">Request a Quote</button>
     </nav>
     <div class="nav-actions">
-      <a class="nav-icon-btn" href="{prefix}contact.html" aria-label="Test Drive"><span class="ni-glyph">{IC_WHEEL}</span><span class="ni-label">Test Drive</span></a>
+      <a class="nav-icon-btn" href="/contact.html" aria-label="Test Drive"><span class="ni-glyph">{IC_WHEEL}</span><span class="ni-label">Test Drive</span></a>
       <button class="hamburger" aria-label="Menu">{IC_MENU}</button>
       <button class="btn btn-primary btn-sm" data-quote data-model="">Request a Quote</button>
     </div>
@@ -860,13 +1032,13 @@ HERO_IMAGE = "images/hero-tiggo7.jpg"  # home hero — red Tiggo 7 Pro, golden-h
 
 def footer(prefix):
     model_links = "".join(
-        f'<a href="{prefix}models/{m["slug"]}.html">{E(m["name"])}</a>' for m in MODELS)
+        f'<a href="/models/{m["slug"]}.html">{E(m["name"])}</a>' for m in MODELS)
     return f"""
 <footer class="site-footer" id="contact">
   <div class="wrap">
     <div class="footer-grid">
       <div class="footer-about">
-        <a class="brand" href="{prefix}index.html">{logo(prefix)}</a>
+        <a class="brand" href="/">{logo(prefix)}</a>
         <p class="foot-addr">{'<br>'.join(E(l) for l in SITE['showroom'])}</p>
         <div class="foot-contact">
           <a data-wa data-model="" target="_blank" rel="noopener">WhatsApp +1 (268) 464-3345</a>
@@ -879,9 +1051,9 @@ def footer(prefix):
       </div>
       <div>
         <h4>Visit</h4>
-        <a href="{prefix}contact.html">Contact &amp; Test Drive</a>
-        <a href="{prefix}index.html#promise">Warranty Promise</a>
-        <a href="{prefix}index.html#why">Why Buy From Us</a>
+        <a href="/contact.html">Contact &amp; Test Drive</a>
+        <a href="/#promise">Warranty Promise</a>
+        <a href="/#why">Why Buy From Us</a>
         <a data-quote data-model="" href="#">Request a Quote</a>
         <div class="socials" style="margin-top:14px">
           <a href="{SITE['instagram']}" target="_blank" rel="noopener" aria-label="Instagram">{IC_IG}</a>
@@ -925,7 +1097,7 @@ def build_home():
       <div class="mini-specs reveal">{mini}</div>
       <div class="band-cta reveal">
         <button class="btn btn-primary" data-quote data-model="{E(m['name'])}">Request a Quote</button>
-        <a class="btn-link" href="{p}models/{m['slug']}.html">Explore {E(m['name'])} {IC_ARW}</a>
+        <a class="btn-link" href="/models/{m['slug']}.html">Explore {E(m['name'])} {IC_ARW}</a>
       </div>
     </div>
   </section>"""
@@ -943,7 +1115,7 @@ def build_home():
 {header(p)}
 
 <section class="hero">
-  <div class="hero-bg"><img src="{p}{HERO_IMAGE}" alt="Chery Tiggo 7 Pro on the coast road"></div>
+  <div class="hero-bg"><img src="{p}{HERO_IMAGE}" alt="Chery Tiggo 7 Pro on the coast road" fetchpriority="high" decoding="async"></div>
   <div class="hero-inner wrap">
     <div class="overline reveal in">Chery · Antigua &amp; Barbuda</div>
     <h1 class="reveal in" style="margin-top:22px"><span class="sr-only">Chery Antigua — Tiggo SUVs and hybrids in St John's. </span>One step<br><span class="accent">ahead</span></h1>
@@ -1029,7 +1201,7 @@ def build_home():
 
     title = "Chery Antigua — Tiggo SUVs & Hybrids in St John's"
     desc = "Chery in Antigua & Barbuda — Tiggo 4, Tiggo 4 HEV, Tiggo 7 Pro, Tiggo 8 and the flagship Tiggo 9. 7-year warranty and local service in St John's."
-    (ROOT / "index.html").write_text(head(title, desc, "", "index.html", jsonld=ld(home_ld())) + body, encoding="utf-8")
+    (ROOT / "index.html").write_text(head(title, desc, "", "index.html", jsonld=ld(home_ld()), preload=HERO_IMAGE) + body, encoding="utf-8")
     print("wrote index.html")
 
 # ─────────────────────────────────────────────────────────── model pages
@@ -1136,15 +1308,15 @@ def build_model(m):
 {header(p)}
 
 <section class="mhero">
-  <div class="mhero-bg"><img src="{p}{m['hero']}" alt="Chery {E(m['name'])}"></div>
-  <div class="back-link wrap"><a href="{p}index.html">← All models</a></div>
+  <div class="mhero-bg"><img src="{p}{m['hero']}" alt="Chery {E(m['name'])}" fetchpriority="high" decoding="async"></div>
+  <div class="back-link wrap"><a href="/models/">← All models</a></div>
   <div class="mhero-inner wrap">
     <h1 class="reveal in">Chery {E(m['name'])}</h1>
     <div class="mtag reveal in">{E(m['tagline'])}</div>
     <div class="mhero-cta reveal in">
       <button class="btn btn-primary btn-lg" data-quote data-model="{E(m['name'])}">Request a Quote</button>
       <a class="btn btn-ghost btn-lg" data-wa data-model="{E(m['name'])}" target="_blank" rel="noopener">WhatsApp us</a>
-      <a class="btn btn-ghost btn-lg" href="{p}brochures/pdf/{m['slug']}.pdf" download target="_blank" rel="noopener">Download Brochure</a>
+      <a class="btn btn-ghost btn-lg" href="/brochures/pdf/{m['slug']}.pdf" download target="_blank" rel="noopener">Download Brochure</a>
     </div>
   </div>
 </section>
@@ -1214,11 +1386,13 @@ def build_model(m):
     title = f"{BRAND} {m['name']} — {m['seo_type']} | {SITE_NAME}"
     desc = m["seo_desc"]
     crumbs = breadcrumb_ld([("Home", BASE_URL + "/"),
-                            ("Models", BASE_URL + "/#models"),
+                            ("Models", canonical("models/index.html")),
                             (f"{BRAND} {m['name']}", canonical(f"models/{m['slug']}.html"))])
     (ROOT / "models" / f"{m['slug']}.html").write_text(
         head(title, desc, p, f"models/{m['slug']}.html",
-             jsonld=ld(vehicle_ld(m), crumbs), share_image=m.get("hero")) + body, encoding="utf-8")
+             jsonld=ld(vehicle_ld(m), crumbs),
+             share_image=m.get("hero") or m.get("image"),
+             preload=m.get("hero") or m.get("image")) + body, encoding="utf-8")
     print(f"wrote models/{m['slug']}.html")
 
 # ───────────────────────────────────────────────────────── model brochures
@@ -1411,7 +1585,7 @@ def build_contact():
           <div class="check">&#10003;</div>
           <h3>Test drive requested!</h3>
           <p>Thanks <span class="td-name">there</span> — we've received your request for the <b class="td-model-name">Chery</b>. Our team will confirm your slot shortly.</p>
-          <a class="btn btn-outline" href="{p}index.html">Back to home</a>
+          <a class="btn btn-outline" href="/">Back to home</a>
         </div>
       </div>
 
@@ -1434,7 +1608,7 @@ def build_contact():
           <div class="check">&#10003;</div>
           <h3>Message sent!</h3>
           <p>Thanks <span class="msg-name">there</span> — we'll get back to you shortly.</p>
-          <a class="btn btn-outline" href="{p}index.html">Back to home</a>
+          <a class="btn btn-outline" href="/">Back to home</a>
         </div>
       </div>
     </div>
@@ -1459,9 +1633,12 @@ if __name__ == "__main__":
     (ROOT / "models").mkdir(exist_ok=True)
     (ROOT / "brochures").mkdir(exist_ok=True)
     build_home()
+    build_models_index()
+    build_404()
     build_seo_files()
     build_contact()
     for m in MODELS:
         build_model(m)
         build_brochure(m)
+    add_image_dimensions()
     print("done —", len(MODELS), "models + brochures + contact")

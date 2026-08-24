@@ -115,6 +115,29 @@ Mark `generate_lead` as a key event in GA4 to get conversion reporting.
   visible heading, a `.sr-only` heading carries it for screen readers and
   crawlers without changing anything on screen.
 
+### Performance & Core Web Vitals
+
+`build.py` post-processes its own output: `add_image_dimensions()` reads each
+image with Pillow and writes real `width`/`height` onto every `<img>`, so the
+browser reserves the right box before the bytes arrive (Cumulative Layout
+Shift). It is paired with `img { height: auto }` in the CSS — the `object-fit`
+rules on `.hero-bg`, `.mband .media` and friends are more specific and still
+win, so nothing is visually resized. Coverage is 100%; if it ever drops, an
+image path in `MODELS` is wrong.
+
+The home and model heroes are the Largest Contentful Paint element, so `head()`
+emits `<link rel="preload" as="image" fetchpriority="high">` for them and the
+`<img>` carries `fetchpriority="high" decoding="async"`.
+
+### Pages beyond the models
+
+- `models/index.html` — the full range as a category page. It is the breadcrumb
+  target, the "Models" nav destination and an internal-linking hub; each card
+  title is an `<h2>` so every model name lands in the outline.
+- `404.html` — Netlify serves it for any unmatched path **at any depth**, which
+  is why every link and asset on it is root-absolute. All internal navigation
+  is root-absolute for the same reason (and so no internal link lands on a 301).
+
 ### Security headers
 
 `_headers` is the Netlify / Cloudflare Pages format. It sets HSTS, a strict

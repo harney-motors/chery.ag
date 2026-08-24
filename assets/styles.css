@@ -56,7 +56,7 @@ body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background-image: repeating-linear-gradient(135deg, rgba(19,22,25,.022) 0 1px, transparent 1px 9px);
 }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }
 a { color: var(--navy); text-decoration: none; transition: color .2s; }
 a:hover { color: var(--bronze-2); }
 ::placeholder { color: #9aa2ab; }
@@ -537,4 +537,36 @@ html { scroll-padding-top: 116px; scroll-behavior: smooth; }
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Models index + 404 page ──────────────────────────────────────────────
+   Self-contained so it works on the light sites and Changan's dark theme:
+   every colour falls back through the variables each site actually defines. */
+.models-page { padding: 132px 0 76px; }
+.models-page .mp-head { margin-bottom: 42px; }
+.models-page h1 { font-size: clamp(32px, 5vw, 58px); margin: 12px 0 16px; }
+.models-page .mp-lede { color: var(--muted); max-width: 64ch; line-height: 1.7; }
+
+/* min() guard: below 288px the track shrinks with the viewport instead of
+   overflowing it — matters on 320px-class phones. */
+.mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(288px, 100%), 1fr)); gap: 26px; }
+.mcard {
+  display: block; overflow: hidden; border: 1px solid var(--line);
+  background: var(--paper-2, var(--navy-900, #141417));
+  transition: transform .35s var(--ease), border-color .35s var(--ease);
+}
+.mcard:hover { transform: translateY(-5px); border-color: var(--line-2, var(--line)); }
+.mcard .ph { display: block; aspect-ratio: 4 / 3; overflow: hidden;
+             background: var(--paper-3, var(--navy-900, #101014)); }
+.mcard .ph img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s var(--ease); }
+.mcard:hover .ph img { transform: scale(1.05); }
+.mcard .tx { display: block; padding: 20px 22px 24px; }
+.mcard .nm { display: block; margin: 0; font-family: var(--disp); font-weight: 700; font-size: 21px; color: var(--ink); }
+.mcard .ty { display: block; margin-top: 6px; font-size: 11.5px; letter-spacing: .14em;
+             text-transform: uppercase; color: var(--muted); }
+.mcard .bl { display: block; margin-top: 12px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .models-page { padding: 104px 0 56px; }
+  .mgrid { gap: 20px; }
 }
