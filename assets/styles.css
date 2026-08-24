@@ -525,3 +525,16 @@ html { scroll-padding-top: 116px; scroll-behavior: smooth; }
   linear-gradient(180deg, rgba(255,255,255,.74) 0%, rgba(255,255,255,.97) 34%, rgba(255,255,255,.97) 66%, rgba(255,255,255,.76) 100%),
   linear-gradient(90deg, rgba(255,255,255,.5), transparent 55%); }
 .why .wrap { position: relative; z-index: 1; }
+
+/* Screen-reader-only text — carries the descriptive part of a heading (page
+   subject, section name) for assistive tech and search engines without
+   changing anything on screen. */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

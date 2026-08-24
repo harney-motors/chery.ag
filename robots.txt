@@ -1,0 +1,10 @@
+# robots.txt — Chery Antigua
+User-agent: *
+Allow: /
+
+# Print brochures duplicate the model pages — keep them out of the index,
+# but let the downloadable PDFs be crawled.
+Disallow: /brochures/
+Allow: /brochures/pdf/
+
+Sitemap: https://chery.ag/sitemap.xml

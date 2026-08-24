@@ -11,7 +11,7 @@ cheryinternational.com): Poppins, light #f4f4f4 backgrounds, deep Chery
 navy #0B457F, champagne-bronze #A4896C CTAs, dark performance bands and
 big italic uppercase model wordmarks.
 """
-import html, pathlib
+import datetime, html, json, pathlib
 
 ROOT = pathlib.Path(__file__).parent
 
@@ -43,6 +43,8 @@ OFFER = [
 MODELS = [
     {
         "slug": "tiggo-4",
+        "seo_type": "1.5T Compact SUV",
+        "seo_desc": "Chery Tiggo 4 in Antigua — a turbocharged 1.5T compact SUV with dual 10.25\" displays and full driver assistance. Book a test drive in St John's.",
         "name": "Tiggo 4",
         "type": "Compact SUV",
         "tagline": "Cross wonderful life.",
@@ -90,6 +92,8 @@ MODELS = [
     },
     {
         "slug": "tiggo-4-hev",
+        "seo_type": "Hybrid Compact SUV",
+        "seo_desc": "Chery Tiggo 4 HEV in Antigua — CSH self-charging full hybrid, smooth in town and far lighter on fuel, no plug needed. Book a test drive today.",
         "name": "Tiggo 4 HEV",
         "type": "Compact Hybrid SUV",
         "tagline": "Cross wonderful life — electrified.",
@@ -138,6 +142,8 @@ MODELS = [
     },
     {
         "slug": "tiggo-7-pro",
+        "seo_type": "1.6T Mid-size SUV",
+        "seo_desc": "Chery Tiggo 7 Pro in Antigua — a 194 hp 1.6T mid-size SUV with 7-speed dual-clutch and dual 12.3\" displays. Book a test drive in St John's.",
         "name": "Tiggo 7 Pro",
         "type": "Mid-size SUV",
         "tagline": "All the way with you.",
@@ -185,6 +191,8 @@ MODELS = [
     },
     {
         "slug": "tiggo-8",
+        "seo_type": "7-Seat SUV",
+        "seo_desc": "Chery Tiggo 8 in Antigua — a seven-seat SUV with up to 254 hp, ZF all-wheel drive and a 15.6\" smart cockpit. Book a test drive in St John's.",
         "name": "Tiggo 8",
         "type": "7-Seat SUV",
         "tagline": "Enjoy your first class.",
@@ -230,6 +238,8 @@ MODELS = [
     },
     {
         "slug": "tiggo-9",
+        "seo_type": "Flagship 7-Seat SUV",
+        "seo_desc": "Chery Tiggo 9 in Antigua — the 241 hp 2.0T AWD flagship with Nappa leather, massage seats and 14 Sony speakers. Book a test drive in St John's.",
         "name": "Tiggo 9",
         "type": "Flagship 7-Seat SUV",
         "tagline": "One step ahead.",
@@ -437,7 +447,300 @@ IC_FB = '<svg viewBox="0 0 24 24" width="20" fill="currentColor"><path d="M14 9h
 E = html.escape
 
 # ───────────────────────────────────────────────────────── shared partials
-def head(title, desc, prefix, canonical_path, extra_head=""):
+# ══════════════════════════════════════════════════ SEO, analytics & security
+# Everything below is generated output plumbing — canonical URLs, Open Graph /
+# Twitter cards, JSON-LD structured data, the GA4 tag, sitemap.xml, robots.txt
+# and the security headers. Page copy (titles / descriptions) lives with each
+# page; the per-model "seo_title" and "seo_desc" fields live in MODELS above.
+
+BASE_URL  = "https://chery.ag"        # canonical origin — no trailing slash
+SITE_NAME = "Chery Antigua"             # og:site_name / JSON-LD dealer name
+BRAND     = "Chery"           # brand as it reads in copy & schema
+LOCALE    = "en_GB"
+THEME     = "#131619"                 # browser UI colour (matches the header)
+
+# Origin of the VMP `ingestWebLead` endpoint the forms post to (assets/site.js).
+# Named here so the Content-Security-Policy connect-src stays in step with it.
+LEAD_ORIGIN = "https://wqlvyeuqaejbtsrlbpvt.supabase.co"
+
+# ── Google Analytics 4 ──────────────────────────────────────────────────────
+# Paste the GA4 Measurement ID (looks like G-XXXXXXXXXX) between the quotes and
+# re-run `python3 build.py`. While it is empty NO analytics tag is emitted, no
+# Google script is loaded and no cookies are set — the site ships clean until
+# the property is ready. The tag is loaded from an external analytics.js (also
+# generated here) so the pages carry no inline JavaScript and the strict
+# Content-Security-Policy in _headers needs no 'unsafe-inline' for scripts.
+GA4_ID = ""
+
+def canonical(path):
+    """Absolute URL for a site-relative page path ('' / 'index.html' → root)."""
+    return BASE_URL + "/" + ("" if path in ("", "index.html") else path)
+
+def abs_url(rel):
+    """Absolute URL for a site-relative asset path."""
+    return BASE_URL + "/" + str(rel).lstrip("/")
+
+def analytics(prefix):
+    """GA4 loader — two external scripts, no inline JS. Empty when GA4_ID is."""
+    if not GA4_ID:
+        return ""
+    return (f'\n  <link rel="preconnect" href="https://www.googletagmanager.com">'
+            f'\n  <script async src="https://www.googletagmanager.com/gtag/js?id={GA4_ID}"></script>'
+            f'\n  <script src="{prefix}assets/analytics.js"></script>')
+
+# ─────────────────────────────────────────────────────────── structured data
+def ld(*objects):
+    """Render one or more JSON-LD objects as <script> blocks for the <head>."""
+    out = ""
+    for obj in objects:
+        if not obj:
+            continue
+        txt = json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
+        txt = txt.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+        out += f'\n  <script type="application/ld+json">{txt}</script>'
+    return out
+
+def dealer_ld():
+    """The dealership itself — referenced by @id from every other block."""
+    d = {
+        "@type": "AutoDealer",
+        "@id": BASE_URL + "/#dealer",
+        "name": SITE_NAME,
+        "legalName": SITE["dealer"],
+        "url": BASE_URL + "/",
+        "image": abs_url(HERO_IMAGE),
+        "email": SITE["email"],
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "CMS Auto Complex, Scott's Hill Road",
+            "addressLocality": "St John's",
+            "addressCountry": "AG",
+        },
+        "areaServed": {"@type": "Country", "name": "Antigua and Barbuda"},
+        "brand": {"@type": "Brand", "name": BRAND},
+        "sameAs": [u for u in (SITE.get("instagram"), SITE.get("facebook")) if u],
+    }
+    tel = SITE.get("phone") or SITE.get("whatsapp")
+    if tel:
+        d["telephone"] = tel
+    return d
+
+def website_ld():
+    return {
+        "@type": "WebSite",
+        "@id": BASE_URL + "/#website",
+        "url": BASE_URL + "/",
+        "name": SITE_NAME,
+        "inLanguage": "en",
+        "publisher": {"@id": BASE_URL + "/#dealer"},
+    }
+
+def breadcrumb_ld(trail):
+    """trail = [(name, absolute-url), …] in order from the home page down."""
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i, "name": n, "item": u}
+            for i, (n, u) in enumerate(trail, start=1)
+        ],
+    }
+
+def fuel_type(type_line):
+    """Map a model's display type to a schema.org fuelType value."""
+    t = type_line.lower()
+    if "plug-in" in t or "erev" in t or "dm-i" in t:
+        return "Plug-in Hybrid Electric"
+    if "hybrid" in t or "hev" in t:
+        return "Hybrid Electric"
+    if "electric" in t:
+        return "Electric"
+    if "diesel" in t:
+        return "Diesel"
+    return "Gasoline"
+
+def vehicle_ld(m):
+    url = canonical(f"models/{m['slug']}.html")
+    images = [abs_url(i) for i in (m.get("hero"), m.get("image")) if i]
+    return {
+        "@context": "https://schema.org",
+        "@type": "Vehicle",
+        "@id": url + "#vehicle",
+        "name": f"{BRAND} {m['name']}",
+        "url": url,
+        "description": m["seo_desc"],
+        "image": images,
+        "brand": {"@type": "Brand", "name": BRAND},
+        "manufacturer": {"@type": "Organization", "name": BRAND},
+        "model": m["name"],
+        "bodyType": m["type"].split("·")[0].strip(),
+        "vehicleConfiguration": m["type"].replace("·", "—"),
+        "fuelType": fuel_type(m["type"]),
+        "offers": {
+            "@type": "Offer",
+            "url": url,
+            "availability": "https://schema.org/InStock",
+            "areaServed": {"@type": "Country", "name": "Antigua and Barbuda"},
+            "seller": {"@id": BASE_URL + "/#dealer"},
+        },
+    }
+
+def home_ld():
+    return {
+        "@context": "https://schema.org",
+        "@graph": [
+            dealer_ld(),
+            website_ld(),
+            {
+                "@type": "ItemList",
+                "name": f"{BRAND} models available in Antigua & Barbuda",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": i,
+                     "name": f"{BRAND} {m['name']}",
+                     "url": canonical(f"models/{m['slug']}.html")}
+                    for i, m in enumerate(MODELS, start=1)
+                ],
+            },
+        ],
+    }
+
+def contact_ld():
+    return {
+        "@context": "https://schema.org",
+        "@graph": [
+            dealer_ld(),
+            {
+                "@type": "ContactPage",
+                "@id": canonical("contact.html") + "#page",
+                "url": canonical("contact.html"),
+                "name": f"Contact {SITE_NAME}",
+                "inLanguage": "en",
+                "about": {"@id": BASE_URL + "/#dealer"},
+            },
+        ],
+    }
+
+# ───────────────────────────────────────────── sitemap / robots / security
+SECURITY_CONTACT = SITE["email"]   # where to report a vulnerability
+
+def build_seo_files():
+    """Writes sitemap.xml, robots.txt, _headers, _redirects, security.txt and
+    (when GA4_ID is set) assets/analytics.js."""
+    today = datetime.date.today().isoformat()
+
+    # ── sitemap.xml — home, contact and every model page. Brochures are print
+    #    duplicates of the model pages and are deliberately left out.
+    pages = [("index.html", "1.0", "weekly"), ("contact.html", "0.7", "monthly")]
+    pages += [(f"models/{m['slug']}.html", "0.9", "monthly") for m in MODELS]
+    entries = "".join(
+        f"  <url>\n"
+        f"    <loc>{canonical(path)}</loc>\n"
+        f"    <lastmod>{today}</lastmod>\n"
+        f"    <changefreq>{freq}</changefreq>\n"
+        f"    <priority>{prio}</priority>\n"
+        f"  </url>\n"
+        for path, prio, freq in pages)
+    (ROOT / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{entries}</urlset>\n", encoding="utf-8")
+
+    # ── robots.txt
+    (ROOT / "robots.txt").write_text(f"""# robots.txt — {SITE_NAME}
+User-agent: *
+Allow: /
+
+# Print brochures duplicate the model pages — keep them out of the index,
+# but let the downloadable PDFs be crawled.
+Disallow: /brochures/
+Allow: /brochures/pdf/
+
+Sitemap: {BASE_URL}/sitemap.xml
+""", encoding="utf-8")
+
+    # ── _headers — Netlify / Cloudflare Pages security + caching headers.
+    #    The CSP allowlist is deliberately tight: Google Fonts for type,
+    #    googletagmanager/google-analytics for GA4, and the VMP lead endpoint
+    #    for form posts. No 'unsafe-inline' for scripts — the pages carry no
+    #    inline JavaScript at all.
+    (ROOT / "_headers").write_text(f"""# Security & caching headers — Netlify / Cloudflare Pages.
+# Generated by build.py. Edit the policy there, not here.
+
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), usb=(), xr-spatial-tracking=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-site
+  X-DNS-Prefetch-Control: off
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; manifest-src 'self'; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://www.googletagmanager.com; connect-src 'self' {LEAD_ORIGIN} https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com; upgrade-insecure-requests
+
+# Fingerprint-free asset paths change name rarely — revalidate daily.
+/assets/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/images/*
+  Cache-Control: public, max-age=2592000, immutable
+
+/brochures/pdf/*
+  Cache-Control: public, max-age=2592000
+
+# HTML must never be served stale — the build regenerates it.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+/robots.txt
+  Cache-Control: public, max-age=3600
+""", encoding="utf-8")
+
+    # ── _redirects — collapse /index.html onto the canonical root.
+    (ROOT / "_redirects").write_text("""# Netlify / Cloudflare Pages redirects. Generated by build.py.
+# Keep one canonical URL for the home page.
+/index.html    /    301!
+""", encoding="utf-8")
+
+    # ── security.txt (RFC 9116). Expires one year from this build.
+    wk = ROOT / ".well-known"
+    wk.mkdir(exist_ok=True)
+    expires = datetime.date.today().replace(year=datetime.date.today().year + 1)
+    (wk / "security.txt").write_text(f"""# Vulnerability disclosure for {SITE['domain']} (RFC 9116)
+Contact: mailto:{SECURITY_CONTACT}
+Expires: {expires.isoformat()}T00:00:00.000Z
+Preferred-Languages: en
+Canonical: {BASE_URL}/.well-known/security.txt
+""", encoding="utf-8")
+
+    # ── assets/analytics.js — the GA4 bootstrap, kept out of the HTML so the
+    #    CSP can forbid inline script. Removed again if the ID is cleared.
+    ga_js = ROOT / "assets" / "analytics.js"
+    if GA4_ID:
+        ga_js.write_text(f"""/* GA4 bootstrap — GENERATED by build.py from GA4_ID. Do not edit by hand.
+   Event tracking (leads, test drives, WhatsApp, calls) lives in site.js. */
+window.dataLayer = window.dataLayer || [];
+function gtag() {{ dataLayer.push(arguments); }}
+gtag("js", new Date());
+gtag("config", "{GA4_ID}");
+""", encoding="utf-8")
+        print(f"wrote assets/analytics.js (GA4 {GA4_ID})")
+    elif ga_js.exists():
+        ga_js.unlink()
+
+    print("wrote sitemap.xml, robots.txt, _headers, _redirects, .well-known/security.txt")
+    if not GA4_ID:
+        print("  note: GA4_ID is empty — no analytics tag emitted. "
+              "Set GA4_ID in build.py and re-run to switch it on.")
+
+def head(title, desc, prefix, canonical_path, extra_head="", jsonld="",
+         robots="index, follow", share_image=None):
+    """The <head> for every public page: title/description, canonical URL,
+    Open Graph + Twitter cards, JSON-LD and the GA4 tag."""
+    url   = canonical(canonical_path)
+    share = abs_url(share_image or HERO_IMAGE)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -445,15 +748,27 @@ def head(title, desc, prefix, canonical_path, extra_head=""):
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{E(title)}</title>
   <meta name="description" content="{E(desc)}">
+  <meta name="robots" content="{robots}">
+  <link rel="canonical" href="{url}">
+  <meta name="theme-color" content="{THEME}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{E(SITE_NAME)}">
+  <meta property="og:locale" content="{LOCALE}">
+  <meta property="og:url" content="{url}">
   <meta property="og:title" content="{E(title)}">
   <meta property="og:description" content="{E(desc)}">
-  <meta property="og:type" content="website">
+  <meta property="og:image" content="{share}">
+  <meta property="og:image:alt" content="{E(title)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{E(title)}">
+  <meta name="twitter:description" content="{E(desc)}">
+  <meta name="twitter:image" content="{share}">
   <link rel="icon" type="image/png" href="{prefix}images/favicon.png">
   <link rel="apple-touch-icon" href="{prefix}images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,600;1,700;1,800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{prefix}assets/styles.css">{extra_head}
+  <link rel="stylesheet" href="{prefix}assets/styles.css">{extra_head}{jsonld}{analytics(prefix)}
 </head>
 <body>"""
 
@@ -631,7 +946,7 @@ def build_home():
   <div class="hero-bg"><img src="{p}{HERO_IMAGE}" alt="Chery Tiggo 7 Pro on the coast road"></div>
   <div class="hero-inner wrap">
     <div class="overline reveal in">Chery · Antigua &amp; Barbuda</div>
-    <h1 class="reveal in" style="margin-top:22px">One step<br><span class="accent">ahead</span></h1>
+    <h1 class="reveal in" style="margin-top:22px"><span class="sr-only">Chery Antigua — Tiggo SUVs and hybrids in St John's. </span>One step<br><span class="accent">ahead</span></h1>
     <p class="lede reveal in">The Tiggo family has arrived in Antigua — from the city-smart Tiggo 4 to the flagship Tiggo 9, with hybrid power in between. Premium cabins, full driver assistance and a 7-year warranty, backed by island-based sales and service.</p>
     <div class="hero-cta reveal in">
       <button class="btn btn-primary btn-lg" data-quote data-model="">Request a Quote</button>
@@ -712,9 +1027,9 @@ def build_home():
 {modal()}
 {scripts(p)}"""
 
-    title = f"Chery Antigua — Tiggo SUVs | {SITE['dealer']}"
-    desc = "Explore the Chery Tiggo range in Antigua & Barbuda — Tiggo 4, Tiggo 4 HEV, Tiggo 7 Pro, Tiggo 8 and the flagship Tiggo 9. 7-year warranty, local service. Request a personalised quote today."
-    (ROOT / "index.html").write_text(head(title, desc, "", "index.html") + body, encoding="utf-8")
+    title = "Chery Antigua — Tiggo SUVs & Hybrids in St John's"
+    desc = "Chery in Antigua & Barbuda — Tiggo 4, Tiggo 4 HEV, Tiggo 7 Pro, Tiggo 8 and the flagship Tiggo 9. 7-year warranty and local service in St John's."
+    (ROOT / "index.html").write_text(head(title, desc, "", "index.html", jsonld=ld(home_ld())) + body, encoding="utf-8")
     print("wrote index.html")
 
 # ─────────────────────────────────────────────────────────── model pages
@@ -824,7 +1139,7 @@ def build_model(m):
   <div class="mhero-bg"><img src="{p}{m['hero']}" alt="Chery {E(m['name'])}"></div>
   <div class="back-link wrap"><a href="{p}index.html">← All models</a></div>
   <div class="mhero-inner wrap">
-    <h1 class="reveal in">{E(m['name'])}</h1>
+    <h1 class="reveal in">Chery {E(m['name'])}</h1>
     <div class="mtag reveal in">{E(m['tagline'])}</div>
     <div class="mhero-cta reveal in">
       <button class="btn btn-primary btn-lg" data-quote data-model="{E(m['name'])}">Request a Quote</button>
@@ -896,10 +1211,14 @@ def build_model(m):
 {modal(selected=m['name'])}
 {scripts(p)}"""
 
-    title = f"Chery {m['name']} — {m['type']} | Chery Antigua"
-    desc = m["blurb"]
+    title = f"{BRAND} {m['name']} — {m['seo_type']} | {SITE_NAME}"
+    desc = m["seo_desc"]
+    crumbs = breadcrumb_ld([("Home", BASE_URL + "/"),
+                            ("Models", BASE_URL + "/#models"),
+                            (f"{BRAND} {m['name']}", canonical(f"models/{m['slug']}.html"))])
     (ROOT / "models" / f"{m['slug']}.html").write_text(
-        head(title, desc, p, f"models/{m['slug']}.html") + body, encoding="utf-8")
+        head(title, desc, p, f"models/{m['slug']}.html",
+             jsonld=ld(vehicle_ld(m), crumbs), share_image=m.get("hero")) + body, encoding="utf-8")
     print(f"wrote models/{m['slug']}.html")
 
 # ───────────────────────────────────────────────────────── model brochures
@@ -912,6 +1231,7 @@ def brochure_head(title):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{E(title)}</title>
+  <meta name="robots" content="noindex, follow">
   <link rel="icon" type="image/png" href="../images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1027,7 +1347,7 @@ def build_contact():
 <section class="contact-hero">
   <div class="wrap">
     <div class="overline reveal in">Chery · Antigua &amp; Barbuda</div>
-    <h1 class="reveal in">Get in touch</h1>
+    <h1 class="reveal in"><span class="sr-only">Contact Chery Antigua — </span>Get in touch</h1>
     <p class="c-lede reveal in">Book a test drive or send us a message — a member of our team will be in touch shortly.</p>
   </div>
 </section>
@@ -1035,6 +1355,7 @@ def build_contact():
 <section class="section contact-main">
   <div class="wrap contact-grid">
     <aside class="contact-info reveal">
+      <h2 class="sr-only">Visit Chery Antigua</h2>
       <div class="overline">Visit us</div>
       <p class="ci-line"><span class="ci-k">Address</span><span>{'<br>'.join(E(l) for l in SITE['showroom'])}</span></p>
       <p class="ci-line"><span class="ci-k">WhatsApp</span><a data-wa data-model="" target="_blank" rel="noopener">+1 (268) 464-3345</a></p>
@@ -1050,6 +1371,7 @@ def build_contact():
       </div>
 
       <div class="cc-pane" data-pane="testdrive">
+        <h2 class="sr-only">Book a test drive</h2>
         <div class="td-progress">
           <div class="td-bar"><span></span></div>
           <div class="td-steplabel">Step <b class="td-cur">1</b> of 3&nbsp;·&nbsp;<span class="td-title">Choose your model</span></div>
@@ -1094,6 +1416,7 @@ def build_contact():
       </div>
 
       <div class="cc-pane" data-pane="message" hidden>
+        <h2 class="sr-only">Send us a message</h2>
         <form id="msgForm" novalidate>
           <input class="hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div class="row-2">
@@ -1123,11 +1446,12 @@ def build_contact():
 {modal()}
 {scripts(p, extra='<script src="assets/contact.js"></script>')}"""
 
-    title = "Contact & Test Drive | Chery Antigua"
-    desc = f"Book a test drive or send a message to Chery Antigua ({SITE['dealer']}). Choose your model, pick a time, and our team will be in touch."
+    title = "Contact & Test Drive — Chery Antigua, St John's"
+    desc = "Book a Chery test drive in St John's, Antigua — choose your Tiggo and a time, or message us. Showroom at the CMS Auto Complex, Scott's Hill Road."
     extra = '\n  <link rel="stylesheet" href="assets/contact.css">'
     (ROOT / "contact.html").write_text(
-        head(title, desc, "", "contact.html", extra_head=extra) + body, encoding="utf-8")
+        head(title, desc, "", "contact.html", extra_head=extra,
+             jsonld=ld(contact_ld())) + body, encoding="utf-8")
     print("wrote contact.html")
 
 # ─────────────────────────────────────────────────────────────────── main
@@ -1135,6 +1459,7 @@ if __name__ == "__main__":
     (ROOT / "models").mkdir(exist_ok=True)
     (ROOT / "brochures").mkdir(exist_ok=True)
     build_home()
+    build_seo_files()
     build_contact()
     for m in MODELS:
         build_model(m)

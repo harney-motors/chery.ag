@@ -425,3 +425,67 @@ if (pageTabs && "IntersectionObserver" in window) {
 
 /* expose for inline onclick fallbacks if ever needed */
 window.openQuote = openQuote;
+
+
+/* ==========================================================================
+   Analytics events (GA4)
+   --------------------------------------------------------------------------
+   Every call goes through track(), which is a no-op unless a GA4 tag is on
+   the page — so with GA4_ID empty in build.py the site behaves exactly as it
+   did before, with no network calls and no cookies.
+
+   Events sent:
+     generate_lead     any form submitted   (lead_type: quote|test_drive|message)
+     book_test_drive   the test-drive wizard completed
+     view_quote_form   the quote modal opened
+     contact_whatsapp  a WhatsApp button/link clicked
+     contact_call      a Call button / tel: link clicked
+     download_brochure a brochure PDF clicked
+   ========================================================================== */
+(function () {
+  function track(name, params) {
+    if (typeof window.gtag === "function") window.gtag("event", name, params || {});
+  }
+  window.trackEvent = track;
+
+  function modelOf(el) {
+    if (!el) return "";
+    const holder = el.closest("[data-model]");
+    return (holder && holder.getAttribute("data-model")) || "";
+  }
+
+  document.addEventListener("click", function (e) {
+    const t = e.target;
+    if (!t || !t.closest) return;
+
+    const wa = t.closest("[data-wa], a[href*='wa.me']");
+    if (wa) return track("contact_whatsapp", { model: modelOf(wa) });
+
+    const call = t.closest("[data-call], a[href^='tel:']");
+    if (call) return track("contact_call", {});
+
+    const quote = t.closest("[data-quote]");
+    if (quote) return track("view_quote_form", { model: modelOf(quote) });
+
+    const pdf = t.closest("a[href$='.pdf']");
+    if (pdf) return track("download_brochure", {
+      file_name: (pdf.getAttribute("href") || "").split("/").pop()
+    });
+  }, true);
+
+  document.addEventListener("submit", function (e) {
+    const f = e.target;
+    if (!f || f.tagName !== "FORM") return;
+
+    // honeypot filled in = bot; don't report it as a lead
+    const hp = f.querySelector("input[name='company']");
+    if (hp && hp.value) return;
+
+    const data = new FormData(f);
+    const model = (data.get("model") || "").toString();
+    const kind = f.id === "tdForm" ? "test_drive" : f.id === "msgForm" ? "message" : "quote";
+
+    if (kind === "test_drive") track("book_test_drive", { model: model });
+    track("generate_lead", { lead_type: kind, model: model, currency: "XCD", value: 0 });
+  }, true);
+})();
