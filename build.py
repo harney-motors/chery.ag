@@ -470,7 +470,7 @@ LEAD_ORIGIN = "https://wqlvyeuqaejbtsrlbpvt.supabase.co"
 # the property is ready. The tag is loaded from an external analytics.js (also
 # generated here) so the pages carry no inline JavaScript and the strict
 # Content-Security-Policy in _headers needs no 'unsafe-inline' for scripts.
-GA4_ID = ""
+GA4_ID = "G-WE9Y3926QN"
 
 def canonical(path):
     """Absolute URL for a site-relative page path ('' / 'index.html' → root)."""
