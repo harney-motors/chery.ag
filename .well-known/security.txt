@@ -1,5 +1,5 @@
 # Vulnerability disclosure for chery.ag (RFC 9116)
 Contact: mailto:sales@chery.ag
-Expires: 2027-08-24T00:00:00.000Z
+Expires: 2027-10-28T00:00:00.000Z
 Preferred-Languages: en
 Canonical: https://chery.ag/.well-known/security.txt

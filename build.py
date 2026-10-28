@@ -584,13 +584,12 @@ def vehicle_ld(m):
         "bodyType": m["type"].split("·")[0].strip(),
         "vehicleConfiguration": m["type"].replace("·", "—"),
         "fuelType": fuel_type(m["type"]),
-        "offers": {
-            "@type": "Offer",
-            "url": url,
-            "availability": "https://schema.org/InStock",
-            "areaServed": {"@type": "Country", "name": "Antigua and Barbuda"},
-            "seller": {"@id": BASE_URL + "/#dealer"},
-        },
+        # No `offers` block: this dealer is quote-on-request, so there is no
+        # published price. An Offer without a price makes Google treat the page
+        # as a merchant listing and flags "price/priceSpecification required"
+        # (Search Console). Dropping offers keeps the Vehicle rich result valid
+        # without claiming a price we don't have. The dealer is still described
+        # via dealer_ld() (LocalBusiness) in the page graph.
     }
 
 def home_ld():
