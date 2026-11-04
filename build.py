@@ -567,30 +567,30 @@ def fuel_type(type_line):
         return "Diesel"
     return "Gasoline"
 
-def vehicle_ld(m):
+def model_page_ld(m):
+    # A model page is an informational WebPage, not a priced product. These
+    # dealers are quote-on-request (no published price) and carry no ratings or
+    # reviews, so a Product/Vehicle node makes Google's Product-snippet validator
+    # demand offers|review|aggregateRating and flag the page as a critical issue
+    # (Search Console). A WebPage keeps the markup valid and honest; each model is
+    # still in the home-page ItemList and the dealer is described by dealer_ld().
     url = canonical(f"models/{m['slug']}.html")
     images = [abs_url(i) for i in (m.get("hero"), m.get("image")) if i]
-    return {
+    page = {
         "@context": "https://schema.org",
-        "@type": "Vehicle",
-        "@id": url + "#vehicle",
-        "name": f"{BRAND} {m['name']}",
+        "@type": "WebPage",
+        "@id": url + "#webpage",
         "url": url,
+        "name": f"{BRAND} {m['name']}",
         "description": m["seo_desc"],
-        "image": images,
-        "brand": {"@type": "Brand", "name": BRAND},
-        "manufacturer": {"@type": "Organization", "name": BRAND},
-        "model": m["name"],
-        "bodyType": m["type"].split("·")[0].strip(),
-        "vehicleConfiguration": m["type"].replace("·", "—"),
-        "fuelType": fuel_type(m["type"]),
-        # No `offers` block: this dealer is quote-on-request, so there is no
-        # published price. An Offer without a price makes Google treat the page
-        # as a merchant listing and flags "price/priceSpecification required"
-        # (Search Console). Dropping offers keeps the Vehicle rich result valid
-        # without claiming a price we don't have. The dealer is still described
-        # via dealer_ld() (LocalBusiness) in the page graph.
+        "inLanguage": "en",
+        "isPartOf": {"@id": BASE_URL + "/#website"},
+        "about": {"@type": "Brand", "name": BRAND},
     }
+    if images:
+        page["primaryImageOfPage"] = images[0]
+        page["image"] = images
+    return page
 
 def home_ld():
     return {
@@ -1389,7 +1389,7 @@ def build_model(m):
                             (f"{BRAND} {m['name']}", canonical(f"models/{m['slug']}.html"))])
     (ROOT / "models" / f"{m['slug']}.html").write_text(
         head(title, desc, p, f"models/{m['slug']}.html",
-             jsonld=ld(vehicle_ld(m), crumbs),
+             jsonld=ld(model_page_ld(m), crumbs),
              share_image=m.get("hero") or m.get("image"),
              preload=m.get("hero") or m.get("image")) + body, encoding="utf-8")
     print(f"wrote models/{m['slug']}.html")
